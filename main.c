@@ -1,3 +1,4 @@
+/* vim: set ts=8: */
 /* $Id: main.c,v 1.270 2010/08/24 10:11:51 htrb Exp $ */
 #define MAINPROGRAM
 #include "fm.h"
@@ -123,6 +124,13 @@ static int searchKeyNum(void);
 #define usage() fusage(stderr, 1)
 
 int enable_inline_image;	/* 1 == mlterm OSC 5379, 2 == sixel */
+//added by Chris: begin
+#define CLOSED_URL_MAX  5
+Str g_closedUrls[CLOSED_URL_MAX];
+int g_closedUrlIdx = 0;
+
+TabBuffer *g_lastTab;
+//added by Chris: end
 
 static void
 fversion(FILE * f)
@@ -487,6 +495,10 @@ main(int argc, char **argv, char **envp)
 
     /* initializations */
     init_rc();
+
+    //added by Chris: begin
+    memset(g_closedUrls, 0, sizeof(g_closedUrls));
+    //added by Chris: end
 
     LoadHist = newHist();
     SaveHist = newHist();
@@ -1681,6 +1693,93 @@ DEFUN(ldown1, DOWN, "Scroll down one line")
     nscroll(-searchKeyNum(), B_SCROLL);
 }
 
+//add by chris: begin
+DEFUN(mov2top, MOV2TOP, "Move to the top of screen")
+{
+    gotoLine(Currentbuf, Currentbuf->topLine->linenumber);
+    arrangeCursor(Currentbuf);
+    displayBuffer(Currentbuf, B_NORMAL);
+}
+
+DEFUN(mov2bot, MOV2BOT, "Move to the bottom of screen")
+{
+    int top = Currentbuf->topLine->linenumber;
+    int bot = top + Currentbuf->LINES - 1;
+    int last = Currentbuf->lastLine->linenumber;
+
+    if (last < bot) {
+        bot = last;
+    }
+
+    gotoLine(Currentbuf, bot);
+    arrangeCursor(Currentbuf);
+    displayBuffer(Currentbuf, B_NORMAL);
+}
+
+DEFUN(mov2mid, MOV2MID, "Move to the middle of screen")
+{
+    int top = Currentbuf->topLine->linenumber;
+    int mid = top + (Currentbuf->LINES + 1) / 2;
+    int bot = top + Currentbuf->LINES - 1;
+    int last = Currentbuf->lastLine->linenumber;
+
+    if (last < bot) {
+        mid = top + (last - top) / 2;
+    }
+
+    gotoLine(Currentbuf, mid);
+    arrangeCursor(Currentbuf);
+    displayBuffer(Currentbuf, B_NORMAL);
+}
+
+DEFUN(firstInput, FIRST_INPUT, "enter first input form")
+{
+    Anchor *an, *pan;
+    Line *l;
+    int i, x, y, n = searchKeyNum();
+
+    if (Currentbuf->firstLine == NULL)
+	return;
+
+    an = retrieveCurrentForm(Currentbuf);
+
+    l = Currentbuf->currentLine;
+    x = Currentbuf->pos;
+    y = l->linenumber;
+    pan = NULL;
+    for (i = 0; i < n; i++) {
+	if (an)
+	    x = an->end.pos;
+	an = NULL;
+	while (1) {
+	    for (; x >= 0 && x < l->len; x += 1) {
+                an = retrieveAnchor(Currentbuf->formitem, y, x);
+		if (an) {
+		    pan = an;
+		    break;
+		}
+	    }
+	    if (an)
+		break;
+	    l = l->next;
+	    if (!l)
+		break;
+	    x = 0;
+	    y = l->linenumber;
+	}
+	if (!an)
+	    break;
+    }
+
+    if (pan == NULL)
+	return;
+    gotoLine(Currentbuf, y);
+    Currentbuf->pos = pan->start.pos;
+    arrangeCursor(Currentbuf);
+    displayBuffer(Currentbuf, B_NORMAL);
+}
+//add by chris: end
+
 /* move cursor position to the center of screen */
 DEFUN(ctrCsrV, CENTER_V, "Move to the center column")
 {
@@ -1863,6 +1962,24 @@ isrch(int (*func) (Buffer *, char *), char *prompt)
     if (str == NULL) {
 	RESTORE_BUFPOSITION(&sbuf);
     }
+
+    //add by chris: begin
+    char *p;
+    int spos, epos;
+    int i;
+    Line *l;
+
+    p = getCurWord(Currentbuf, &spos, &epos);
+    if (p != NULL)
+    {
+        l = Currentbuf->currentLine;
+        for (i = spos; i < epos; i++) 
+        {
+            l->propBuf[i] |= PE_MARK;
+        }
+    }
+    //add by chris: begin
+
     displayBuffer(Currentbuf, B_FORCE_REDRAW);
 }
 
@@ -1951,7 +2068,26 @@ srch_nxtprv(int reverse)
 	if (reverse == 0)
 	    Currentbuf->pos -= 1;
     }
-    displayBuffer(Currentbuf, B_NORMAL);
+
+    //add by chris: begin
+    char *p;
+    int spos, epos;
+    int i;
+    Line *l;
+
+    p = getCurWord(Currentbuf, &spos, &epos);
+    if (p != NULL)
+    {
+        l = Currentbuf->currentLine;
+        for (i = spos; i < epos; i++) 
+        {
+            l->propBuf[i] |= PE_MARK;
+        }
+    }
+    displayBuffer(Currentbuf, B_FORCE_REDRAW);
+    //add by chris: begin
+
+    //displayBuffer(Currentbuf, B_NORMAL);
     disp_srchresult(result, (reverse ? "Backward: " : "Forward: "),
 		    SearchString);
 }
@@ -2786,6 +2922,151 @@ DEFUN(_mark, MARK, "Set/unset mark")
     l->propBuf[Currentbuf->pos] ^= PE_MARK;
     displayBuffer(Currentbuf, B_FORCE_REDRAW);
 }
+
+//add by chris: begin
+DEFUN(markLine, MARK_LINE, "Mark current line")
+{
+    int i;
+    Line *l;
+
+    if (!use_mark)
+        return;
+
+    if (Currentbuf->firstLine == NULL)
+        return;
+
+    l = Currentbuf->currentLine;
+    for (i = 0; i < l->len; i++) 
+    {
+        l->propBuf[i] ^= PE_MARK;
+    }
+
+    displayBuffer(Currentbuf, B_FORCE_REDRAW);
+}
+
+DEFUN(markWord, MARK_WORD, "Mark current word")
+{
+    char *p;
+    int spos, epos;
+    int i;
+    Line *l;
+
+    if (!use_mark)
+        return;
+
+    p = getCurWord(Currentbuf, &spos, &epos);
+    if (p == NULL)
+        return;
+
+    l = Currentbuf->currentLine;
+    for (i = spos; i < epos; i++) 
+    {
+        l->propBuf[i] ^= PE_MARK;
+    }
+ 
+    displayBuffer(Currentbuf, B_FORCE_REDRAW);
+}
+
+DEFUN(nextLineMark, NEXT_LINE_MARK, "Move to next line mark")
+{
+    Line *l;
+
+    if (!use_mark)
+        return;
+
+    if (Currentbuf->firstLine == NULL)
+        return;
+
+    l = Currentbuf->currentLine;
+    if (l == NULL) {
+        return;
+    }
+
+    l = l->next;
+    while (l != NULL) {
+        if (l->propBuf[0] & PE_MARK) {
+            Currentbuf->currentLine = l;
+            Currentbuf->pos = 0;
+            arrangeCursor(Currentbuf);
+            displayBuffer(Currentbuf, B_NORMAL);
+            return;
+        }
+
+        l = l->next;
+    }
+
+    disp_message("No line mark exists below", TRUE);
+}
+
+DEFUN(prevLineMark, PREV_LINE_MARK, "Move to prev line mark")
+{
+    Line *l;
+
+    if (!use_mark)
+        return;
+
+    if (Currentbuf->firstLine == NULL)
+        return;
+
+    l = Currentbuf->currentLine;
+    if (l == Currentbuf->firstLine) {
+        return;
+    }
+
+    l = l->prev;
+    while (l != NULL) {
+        if (l->propBuf[0] & PE_MARK) {
+            Currentbuf->currentLine = l;
+            Currentbuf->pos = 0;
+            arrangeCursor(Currentbuf);
+            displayBuffer(Currentbuf, B_NORMAL);
+            return;
+        }
+
+        l = l->prev;
+    }
+
+    disp_message("No line mark exists above", TRUE);
+}
+
+static void srchCurWord(Buffer *buf, int (*func) (Buffer *, char *));
+DEFUN(fsrchCurWord, FSRCH_CUR_WORD, "Search current word forward")
+{
+    srchCurWord(Currentbuf, forwardSearch);
+}
+
+DEFUN(bsrchCurWord, BSRCH_CUR_WORD, "Search current word backword")
+{
+    srchCurWord(Currentbuf, backwardSearch);
+}
+
+static void srchCurWord(Buffer *buf, int (*func) (Buffer *, char *))
+{
+    int b, e;
+
+    char *p = getCurWord(Currentbuf, &b, &e);
+    if (p == NULL) {
+        return;
+    }
+
+	Str word = Strnew_charp_n(p, e - b);
+    char *w = conv_to_system(word->ptr);
+    if (*w == '\0') {
+        Strfree(word);
+        return;
+    }
+
+    int result = srchcore(w, func);
+    if (result & SR_FOUND)
+        clear_mark(Currentbuf->currentLine);
+
+    displayBuffer(Currentbuf, B_NORMAL);
+    searchRoutine = func;
+
+    Strfree(word);
+    return;
+}
+//add by chris: end
 
 /* Go to next mark */
 DEFUN(nextMk, NEXT_MARK, "Move to next word")
@@ -4261,6 +4542,194 @@ DEFUN(gorURL, GOTO_RELATIVE, "Go to relative URL")
 {
     goURL0("Goto relative URL: ", TRUE);
 }
+
+//add by chris: begin
+static void goSrch(char *prompt, char *engine)
+{
+    char *url, *referer;
+    ParsedURL p_url, *current;
+    Buffer *cur_buf = Currentbuf;
+
+    url = searchKeyData();
+    if (url == NULL) {
+        Hist *hist = copyHist(URLHist);
+        Anchor *a;
+
+        current = baseURL(Currentbuf);
+        if (current) {
+            char *c_url = parsedURL2Str(current)->ptr;
+            if (DefaultURLString == DEFAULT_URL_CURRENT) {
+                url = c_url;
+                if (DecodeURL)
+                    url = url_unquote_conv(url, 0);
+            }
+            else
+                pushHist(hist, c_url);
+        }
+
+        a = retrieveCurrentAnchor(Currentbuf);
+        if (a) {
+            char *a_url;
+            parseURL2(a->url, &p_url, current);
+            a_url = parsedURL2Str(&p_url)->ptr;
+            if (DefaultURLString == DEFAULT_URL_LINK) {
+                url = a_url;
+                if (DecodeURL)
+                    url = url_unquote_conv(url, Currentbuf->document_charset);
+            }
+            else
+                pushHist(hist, a_url);
+        }
+
+        url = inputLineHist(prompt, url, IN_URL, hist);
+        if (url != NULL)
+            SKIP_BLANKS(url);
+    }
+
+#ifdef USE_M17N
+    if (url != NULL) {
+        if ((*url == '#') && Currentbuf->document_charset)
+            url = wc_conv_strict(url, InnerCharset, Currentbuf->document_charset)->ptr;
+        else
+            url = conv_to_system(url);
+    }
+#endif
+
+    if (url == NULL || *url == '\0') {
+        displayBuffer(Currentbuf, B_FORCE_REDRAW);
+        return;
+    }
+
+    if (*url == '#') {
+	gotoLabel(url + 1);
+	return;
+    }
+
+    if (!engine) {
+        displayBuffer(Currentbuf, B_FORCE_REDRAW);
+        return;
+    }
+
+    char temp[256] = {0};
+    strcpy(temp, engine);
+    strcat(temp, url);
+    url = temp;
+
+    current = NULL;
+    referer = NULL;
+
+    parseURL2(url, &p_url, current);
+    pushHashHist(URLHist, parsedURL2Str(&p_url)->ptr);
+    cmd_loadURL(url, current, referer, NULL);
+    if (Currentbuf != cur_buf)	/* success */
+        pushHashHist(URLHist, parsedURL2Str(&Currentbuf->currentURL)->ptr);
+}
+
+DEFUN(goSrchBaidu, SRCH_BD, "Search baidu online")
+{
+    goSrch("Baidu Search: ", "bd:");
+}
+
+DEFUN(goSrchGoogle, SRCH_GG, "Search google online")
+{
+    goSrch("Google Search: ", "gg:");
+}
+
+DEFUN(goSrchWiki, SRCH_WK, "Search wiki online")
+{
+    goSrch("Wiki Search: ", "wk:");
+}
+
+static void undoCloseUrl(int allUrl);
+DEFUN(undoCloseOne, UNDO_CLOSE_ONE, "Undo close last one tab")
+{
+    undoCloseUrl(FALSE);
+}
+
+DEFUN(undoCloseAll, UNDO_CLOSE_ALL, "Undo close last all tabs")
+{
+    undoCloseUrl(TRUE);
+}
+
+static void undoCloseUrl(int allUrl)
+{
+    Buffer *buf;
+    char *url;
+    ParsedURL p_url;
+
+    int cnt = 1;
+    if (allUrl == TRUE) {
+        cnt = CLOSED_URL_MAX;
+    }
+
+    while (cnt-- > 0) {
+        int lastClosedUrlIdx = g_closedUrlIdx - 1;
+        if (lastClosedUrlIdx < 0) {
+            lastClosedUrlIdx = CLOSED_URL_MAX - 1;
+        }
+
+        if (NULL == g_closedUrls[lastClosedUrlIdx]) {
+            return;
+        }
+
+        url = g_closedUrls[lastClosedUrlIdx]->ptr;
+        if (url == NULL || *url == '\0') {
+            return;
+        }
+
+        _newT();
+        buf = Currentbuf;
+
+        parseURL2(url, &p_url, NULL);
+        pushHashHist(URLHist, parsedURL2Str(&p_url)->ptr);
+        cmd_loadURL(url, NULL, NULL, NULL);
+
+        //if (buf != Currentbuf)
+        //    delBuffer(buf);
+        //else
+        //    deleteTab(CurrentTab);
+
+        displayBuffer(Currentbuf, B_FORCE_REDRAW);
+
+        Strfree(g_closedUrls[lastClosedUrlIdx]);
+        g_closedUrlIdx--;
+        if (g_closedUrlIdx < 0) {
+            g_closedUrlIdx = CLOSED_URL_MAX - 1;
+        }
+    }
+}
+
+static void srchGoto(int (*func) (Buffer *, char *), char *keyword);
+DEFUN(gotoNext, GOTO_NEXT, "Goto next page")
+{
+    srchGoto(forwardSearch, "Next");
+}
+
+static void srchGoto(int (*func) (Buffer *, char *), char *keyword)
+{
+    int result;
+    int pos;
+    int reverse = FALSE;
+
+    //searchRoutine = func;
+
+    pos = Currentbuf->pos;
+    if (func == forwardSearch) {
+        reverse = TRUE;
+        Currentbuf->pos += 1;
+    }
+
+    result = srchcore(keyword, func);
+    if (result & SR_FOUND) {
+        clear_mark(Currentbuf->currentLine);
+        followA();
+    } else {
+        Currentbuf->pos = pos;
+        displayBuffer(Currentbuf, B_NORMAL);
+        disp_srchresult(result, (reverse ? "Backward: " : "Forward: "), keyword);
+    }
+}
+//add by chris: end
 
 static void
 cmd_loadBuffer(Buffer *buf, int prop, int linkid)
@@ -6303,6 +6772,12 @@ deleteTab(TabBuffer * tab)
 {
     Buffer *buf, *next;
 
+    //added by Chris: begin
+    g_closedUrls[g_closedUrlIdx] = Strdup(parsedURL2Str(&Currentbuf->currentURL));
+    g_closedUrlIdx++;
+    g_closedUrlIdx %= CLOSED_URL_MAX;
+    //added by Chris: end
+
     if (nTab <= 1)
 	return FirstTab;
     if (tab->prevTab) {
@@ -6335,13 +6810,19 @@ DEFUN(closeT, CLOSE_TAB, "Close current tab")
     TabBuffer *tab;
 
     if (nTab <= 1)
-	return;
+        _quitfm(0);  //mod by chris
+
     if (prec_num)
 	tab = numTab(PREC_NUM);
     else
 	tab = CurrentTab;
     if (tab)
 	deleteTab(tab);
+
+    //add by chris: begin
+    g_lastTab = NULL;
+    //add by chris: end
+
     displayBuffer(Currentbuf, B_REDRAW_IMAGE);
 }
 
@@ -6351,6 +6832,11 @@ DEFUN(nextT, NEXT_TAB, "Move to next tab")
 
     if (nTab <= 1)
 	return;
+
+    //add by chris: begin
+    g_lastTab = CurrentTab;
+    //add by chris: end
+
     for (i = 0; i < PREC_NUM; i++) {
 	if (CurrentTab->nextTab)
 	    CurrentTab = CurrentTab->nextTab;
@@ -6366,6 +6852,11 @@ DEFUN(prevT, PREV_TAB, "Move to previous tab")
 
     if (nTab <= 1)
 	return;
+
+    //add by chris: begin
+    g_lastTab = CurrentTab;
+    //add by chris: end
+
     for (i = 0; i < PREC_NUM; i++) {
 	if (CurrentTab->prevTab)
 	    CurrentTab = CurrentTab->prevTab;
@@ -6374,6 +6865,23 @@ DEFUN(prevT, PREV_TAB, "Move to previous tab")
     }
     displayBuffer(Currentbuf, B_REDRAW_IMAGE);
 }
+
+//add by chris: begin
+DEFUN(lastT, LAST_TAB, "Move to last tab")
+{
+    if (nTab <= 1)
+	return;
+
+    if (g_lastTab == NULL)
+	return;
+
+    TabBuffer *tempTab = CurrentTab;
+    CurrentTab = g_lastTab;
+    g_lastTab = tempTab;
+
+    displayBuffer(Currentbuf, B_REDRAW_IMAGE);
+}
+//add by chris: end
 
 static void
 followTab(TabBuffer * tab)
@@ -6395,6 +6903,11 @@ followTab(TabBuffer * tab)
 	check_target = TRUE;
 	return;
     }
+
+    //add by chris: begin
+    g_lastTab = CurrentTab;
+    //add by chris: end
+    
     _newT();
     buf = Currentbuf;
     check_target = FALSE;
@@ -6438,6 +6951,11 @@ tabURL0(TabBuffer * tab, char *prompt, int relative)
 	goURL0(prompt, relative);
 	return;
     }
+
+    //add by chris: begin
+    g_lastTab = CurrentTab;
+    //add by chris: end
+
     _newT();
     buf = Currentbuf;
     goURL0(prompt, relative);
@@ -6476,6 +6994,63 @@ DEFUN(tabrURL, TAB_GOTO_RELATIVE, "Open relative URL on new tab")
     tabURL0(prec_num ? numTab(PREC_NUM) : NULL,
 	    "Goto relative URL on new tab: ", TRUE);
 }
+
+//add by chris: begin
+static void tabSrch(TabBuffer *tab, char *prompt, char *engine)
+{
+    Buffer *buf;
+
+    if (tab == CurrentTab) {
+        goSrch(prompt, engine);
+        return;
+    }
+
+    //add by chris: begin
+    g_lastTab = CurrentTab;
+    //add by chris: end
+
+    _newT();
+    buf = Currentbuf;
+    goSrch(prompt, engine);
+    if (tab == NULL) {
+	if (buf != Currentbuf)
+	    delBuffer(buf);
+	else
+	    deleteTab(CurrentTab);
+    }
+    else if (buf != Currentbuf) {
+	/* buf <- p <- ... <- Currentbuf = c */
+	Buffer *c, *p;
+
+	c = Currentbuf;
+	p = prevBuffer(c, buf);
+	p->nextBuffer = NULL;
+	Firstbuf = buf;
+	deleteTab(CurrentTab);
+	CurrentTab = tab;
+	for (buf = p; buf; buf = p) {
+	    p = prevBuffer(c, buf);
+	    pushBuffer(buf);
+	}
+    }
+    displayBuffer(Currentbuf, B_FORCE_REDRAW);
+}
+
+DEFUN(tabSrchBaidu, TAB_SRCH_BD, "Search in Baidu on new tab")
+{
+    tabSrch(prec_num ? numTab(PREC_NUM) : NULL, "Tab Baidu Search: ", "bd:");
+}
+
+DEFUN(tabSrchGoogle, TAB_SRCH_GG, "Search in Baidu on new tab")
+{
+    tabSrch(prec_num ? numTab(PREC_NUM) : NULL, "Tab Google Search: ", "gg:");
+}
+
+DEFUN(tabSrchWiki, TAB_SRCH_WK, "Search in Baidu on new tab")
+{
+    tabSrch(prec_num ? numTab(PREC_NUM) : NULL, "Tab Wiki Search: ", "wk:");
+}
+//add by chris: end
 
 static void
 moveTab(TabBuffer * t, TabBuffer * t2, int right)

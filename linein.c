@@ -58,7 +58,10 @@ void (*InputKeymap[32]) () = {
 /*  C-p     C-q     C-r     C-s     C-t     C-u     C-v     C-w     */
     _prev,  _quo,   _bsw,   iself,  _mvLw,  killb,  _quo,   _bsw,
 /*  C-x     C-y     C-z     C-[     C-\     C-]     C-^     C-_     */
-    _tcompl,_mvRw,  iself,  _esc,   iself,  iself,  iself,  iself,
+    //mod by chris: begin
+    _tcompl,_mvRw,  iself,  _inbrk, iself,  iself,  iself,  iself,
+  //_tcompl,_mvRw,  iself,  _esc,   iself,  iself,  iself,  iself,
+    //mod by chris: end
 };
 /* *INDENT-ON* */
 
@@ -184,7 +187,8 @@ inputLineHistSearch(char *prompt, char *def_str, int flag, Hist *hist,
 	cm_clear = TRUE;
 	cm_disp_clear = TRUE;
 	if (!i_quote &&
-	    (((cm_mode & CPL_ALWAYS) && (c == CTRL_I || c == ' ')) ||
+	    //(((cm_mode & CPL_ALWAYS) && (c == CTRL_I || c == ' ')) ||
+	    (((cm_mode & CPL_ALWAYS) && (c == CTRL_I)) ||
 	     ((cm_mode & CPL_ON) && (c == CTRL_I)))) {
 	    if (emacs_like_lineedit && cm_next) {
 		_dcompl();
@@ -436,7 +440,7 @@ _esc(void)
 	}
 	break;
     case CTRL_I:
-    case ' ':
+    //case ' ':
 	if (emacs_like_lineedit) {
 	    _rdcompl();
 	    cm_clear = FALSE;
@@ -669,7 +673,8 @@ next_compl(int next)
 	}
 	else {
 	    for (b = CPos - 1; b >= 0; b--) {
-		if ((strBuf->ptr[b] == ' ' || strBuf->ptr[b] == CTRL_I) &&
+		//if ((strBuf->ptr[b] == ' ' || strBuf->ptr[b] == CTRL_I) &&
+		if ((strBuf->ptr[b] == CTRL_I) &&
 		    !((b > 0) && strBuf->ptr[b - 1] == '\\'))
 		    break;
 	    }

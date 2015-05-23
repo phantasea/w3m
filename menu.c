@@ -74,11 +74,17 @@ static int (*MenuKeymap[128]) (char c) = {
     mNull,  mTop,   mPrev,  mClose, mNull,  mLast,  mNext,  mNull,
 #endif
 /*  C-h     C-i     C-j     C-k     C-l     C-m     C-n     C-o      */
-    mCancel,mNull,  mOk,    mNull,  mNull,  mOk,    mDown,  mNull,
+    //mod by chris: begin
+  //mCancel,mNull,  mOk,    mNull,  mNull,  mOk,    mDown,  mNull,
+    mCancel,mNull,  mNext,  mPrev,  mNull,  mOk,    mDown,  mNull,
+    //mod by chris: end
 /*  C-p     C-q     C-r     C-s     C-t     C-u     C-v     C-w      */
     mUp,    mNull,  mSrchB, mSrchF, mNull,  mNull,  mNext,  mNull,
 /*  C-x     C-y     C-z     C-[     C-\     C-]     C-^     C-_      */
-    mNull,  mNull,  mSusp,  mEsc,   mNull,  mNull,  mNull,  mNull,
+    //mod by chris: begin
+  //mNull,  mNull,  mSusp,  mEsc,   mNull,  mNull,  mNull,  mNull,
+    mNull,  mNull,  mSusp,  mCancel,mNull,  mNull,  mNull,  mNull,
+    //mod by chris: end
 /*  SPC     !       "       #       $       %       &       '        */
     mOk,    mNull,  mNull,  mNull,  mNull,  mNull,  mNull,  mNull,
 /*  (       )       *       +       ,       -       .       /        */

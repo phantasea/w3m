@@ -2911,7 +2911,7 @@ DEFUN(editScr, EDIT_SCREEN, "Edit currently rendered document")
 #ifdef USE_MARK
 
 /* Set / unset mark */
-DEFUN(_mark, MARK, "Set/unset mark")
+DEFUN(_mark, MARK_CHAR, "Mark current char")
 {
     Line *l;
     if (!use_mark)
@@ -5514,13 +5514,13 @@ chkURLBuffer(Buffer *buf)
     buf->check_url |= CHK_URL;
 }
 
-DEFUN(chkURL, MARK_URL, "Mark URL-like strings as anchors")
+DEFUN(chkURL, ANCHOR_URL, "Mark URL-like strings as anchors")
 {
     chkURLBuffer(Currentbuf);
     displayBuffer(Currentbuf, B_FORCE_REDRAW);
 }
 
-DEFUN(chkWORD, MARK_WORD, "Mark current word as anchor")
+DEFUN(chkWORD, ANCHOR_WORD, "Mark current word as anchor")
 {
     char *p;
     int spos, epos;

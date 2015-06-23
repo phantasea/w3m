@@ -2926,8 +2926,9 @@ DEFUN(_mark, MARK_CHAR, "Mark current char")
 //add by chris: begin
 DEFUN(markLine, MARK_LINE, "Mark current line")
 {
-    int i;
+    int i, s, e;
     Line *l;
+    char *p;
 
     if (!use_mark)
         return;
@@ -2936,7 +2937,19 @@ DEFUN(markLine, MARK_LINE, "Mark current line")
         return;
 
     l = Currentbuf->currentLine;
-    for (i = 0; i < l->len; i++) 
+    p = l->lineBuf;
+    s = 0;
+    while ((s < l->len) && IS_SPACE(*(p+s)))
+        s++;
+
+    if (s == l->len)
+        return;
+
+    e = l->len - 1;
+    while ((e > 0) && IS_SPACE(*(p+e)))
+        e--;
+
+    for (i = s; i <= e; i++) 
     {
         l->propBuf[i] ^= PE_MARK;
     }

@@ -57,6 +57,7 @@ static int mCancel(char c);
 static int mClose(char c);
 static int mSusp(char c);
 static int mMouse(char c);
+static int mSgrMouse(char c);
 static int mSrchF(char c);
 static int mSrchB(char c);
 static int mSrchN(char c);
@@ -122,15 +123,15 @@ static int (*MenuEscKeymap[128]) (char c) = {
     mNull,  mNull,  mNull,  mNull,  mNull,  mNull,  mNull,  mNull,
 
     mNull,  mNull,  mNull,  mNull,  mNull,  mNull,  mNull,  mNull,
-/*  O     */
+/*                                                          O     */
     mNull,  mNull,  mNull,  mNull,  mNull,  mNull,  mNull,  mEscB,
     mNull,  mNull,  mNull,  mNull,  mNull,  mNull,  mNull,  mNull,
-/*  [                                     */
+/*                          [                                     */
     mNull,  mNull,  mNull,  mEscB,  mNull,  mNull,  mNull,  mNull,
 
     mNull,  mNull,  mNull,  mNull,  mNull,  mNull,  mNull,  mNull,
     mNull,  mNull,  mNull,  mNull,  mNull,  mNull,  mNull,  mNull,
-/*  v             */
+/*                                                  v             */
     mNull,  mNull,  mNull,  mNull,  mNull,  mNull,  mPrev,  mNull,
     mNull,  mNull,  mNull,  mNull,  mNull,  mNull,  mNull,  mNull,
 };
@@ -143,10 +144,11 @@ static int (*MenuEscBKeymap[128]) (char c) = {
     mNull,  mNull,  mNull,  mNull,  mNull,  mNull,  mNull,  mNull,
     mNull,  mNull,  mNull,  mNull,  mNull,  mNull,  mNull,  mNull,
     mNull,  mNull,  mNull,  mNull,  mNull,  mNull,  mNull,  mNull,
-    mNull,  mNull,  mNull,  mNull,  mNull,  mNull,  mNull,  mNull,
-/*  A       B       C       D       E                     */
+/*  8       9       :       ;       <       =       >       ?     */
+    mNull,  mNull,  mNull,  mNull,  mSgrMouse,mNull,mNull,  mNull,
+/*          A       B       C       D       E                     */
     mNull,  mUp,    mDown,  mOk,    mCancel,mClose, mNull, mNull,
-/*  L       M                     */
+/*                                  L       M                     */
     mNull,  mNull,  mNull,  mNull,  mClose, mMouse, mNull,  mNull,
     mNull,  mNull,  mNull,  mNull,  mNull,  mNull,  mNull,  mNull,
     mNull,  mNull,  mNull,  mNull,  mNull,  mNull,  mNull,  mNull,
@@ -1206,6 +1208,48 @@ mMouse(char c)
 
     /* 
      * if (x < 0 || x >= COLS || y < 0 || y > LASTLINE) return; */
+    return process_mMouse(btn, x, y);
+}
+
+static int
+mSgrMouse(char c)
+{
+    int btn = 0, x = 0, y = 0;
+    unsigned char ch;
+
+    for (ch = getch(); IS_DIGIT(ch); ch = getch())
+	btn = btn * 10 + ch - '0';
+    if (ch != ';')
+	return MENU_NOTHING;
+
+#if defined (__CYGWIN__) && CYGWIN_VERSION_DLL_MAJOR < 1005
+    if (cygwin_mouse_btn_swapped) {
+	if (btn == MOUSE_BTN2_DOWN)
+	    btn = MOUSE_BTN3_DOWN;
+	else if (btn == MOUSE_BTN3_DOWN)
+	    btn = MOUSE_BTN2_DOWN;
+    }
+#endif
+
+    for (ch = getch(); IS_DIGIT(ch); ch = getch())
+	x = x * 10 + ch - '0';
+    if (ch != ';')
+	return MENU_NOTHING;
+    if (x > 0)
+	x--;
+
+    for (ch = getch(); IS_DIGIT(ch); ch = getch())
+	y = y * 10 + ch - '0';
+    if (ch == 'm')
+	btn |= 3;
+    else if (ch != 'M' && ch != ';')
+	return MENU_NOTHING;
+    if (y > 0)
+	y--;
+
+    if (x < 0 || x >= COLS || y < 0 || y > LASTLINE)
+	return MENU_NOTHING;
+
     return process_mMouse(btn, x, y);
 }
 

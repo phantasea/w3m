@@ -301,6 +301,14 @@ getKey2(char **str)
 	    return -1;
     }
 
+    //add by chris, but not working
+    #if 0
+    if (strncasecmp(s, "BS", 2) == 0) {	        /* BACKSPACE */
+	*str = s + 2;
+	return esc | '\b';
+    }
+    #endif
+
     if (strncasecmp(s, "SPC", 3) == 0) {	/* ' ' */
 	*str = s + 3;
 	return esc | ' ';

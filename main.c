@@ -4268,6 +4268,9 @@ nextY(int d)
 	    hseq = abs(an->hseq);
 	an = NULL;
 	for (; y >= 0 && y <= Currentbuf->lastLine->linenumber; y += d) {
+          //mod by chris for x traversing
+          for (x = 0; x < Currentbuf->currentLine->len; x++)
+          {
 	    an = retrieveAnchor(Currentbuf->href, y, x);
 	    if (!an)
 		an = retrieveAnchor(Currentbuf->formitem, y, x);
@@ -4275,6 +4278,9 @@ nextY(int d)
 		pan = an;
 		break;
 	    }
+          }
+          if (an)
+            break;
 	}
 	if (!an)
 	    break;
@@ -4283,7 +4289,10 @@ nextY(int d)
     if (pan == NULL)
 	return;
     gotoLine(Currentbuf, pan->start.line);
-    arrangeLine(Currentbuf);
+    //mod by chris for x traversing
+    Currentbuf->pos = pan->start.pos;
+    arrangeCursor(Currentbuf);
+    //arrangeLine(Currentbuf);
     displayBuffer(Currentbuf, B_NORMAL);
 }
 

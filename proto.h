@@ -19,6 +19,9 @@ extern void ldown1(void);
 extern void mov2top(void);
 extern void mov2mid(void);
 extern void mov2bot(void);
+extern void scr2top(void);
+extern void scr2mid(void);
+extern void scr2bot(void);
 /*********add by chris*********/
 extern void ctrCsrV(void);
 extern void ctrCsrH(void);

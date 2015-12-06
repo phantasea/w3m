@@ -1779,6 +1779,48 @@ DEFUN(firstInput, FIRST_INPUT, "enter first input form")
     arrangeCursor(Currentbuf);
     displayBuffer(Currentbuf, B_NORMAL);
 }
+
+DEFUN(scr2top, SCR2TOP, "Scroll to the top of screen")
+{
+    if (Currentbuf->firstLine == NULL)
+	return;
+
+    int offsety = Currentbuf->cursorY;
+    if (offsety == 0)
+        return;
+
+    Currentbuf->topLine = lineSkip(Currentbuf, Currentbuf->topLine, offsety, FALSE);
+    arrangeLine(Currentbuf);
+    displayBuffer(Currentbuf, B_NORMAL);
+}
+
+DEFUN(scr2mid, SCR2MID, "Scroll to the center of screen")
+{
+    if (Currentbuf->firstLine == NULL)
+	return;
+
+    int offsety = Currentbuf->LINES / 2 - Currentbuf->cursorY;
+    if (offsety == 0)
+        return;
+
+    Currentbuf->topLine = lineSkip(Currentbuf, Currentbuf->topLine, -offsety, FALSE);
+    arrangeLine(Currentbuf);
+    displayBuffer(Currentbuf, B_NORMAL);
+}
+
+DEFUN(scr2bot, SCR2BOT, "Scroll to the bottom of screen")
+{
+    if (Currentbuf->firstLine == NULL)
+	return;
+
+    int offsety = Currentbuf->LINES - Currentbuf->cursorY - 1;
+    if (offsety == 0)
+        return;
+
+    Currentbuf->topLine = lineSkip(Currentbuf, Currentbuf->topLine, -offsety, FALSE);
+    arrangeLine(Currentbuf);
+    displayBuffer(Currentbuf, B_NORMAL);
+}
 //add by chris: end
 
 /* move cursor position to the center of screen */

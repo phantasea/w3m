@@ -1,3 +1,33 @@
+2015-12-20  Franz Thoma  <franz.thoma@tngtech.com>
+
+	* w3mimg/x11/x11_w3mimg.c: Fix semi-transparent artifacts in w3m-img
+	when used with 32-bit color (e.g. urxvt).
+	imlib_render_image_on_drawable_at_size() tended to leave nasty
+	semi-transparent artifacts in 32-bit mode.  Apparently, resizing an
+	image in 32-bit mode affects the alpha channel even if there is no
+	transparency in the image.  With this patch, resizing is done in
+	24-bit mode (or whatever depth the original image has) before
+	converting the image to 32-bit and rendering it on the display.
+	Origin: https://gist.github.com/fmthoma/f76a1b44e00d5ca972bb
+	cf. https://github.com/hut/ranger/issues/86#issuecomment-166027119
+
+2015-12-17  Tatsuya Kinoshita  <tats@debian.org>
+
+	* w3mimg/x11/x11_w3mimg.c:
+	Wrap render_pixbuf_to_pixmap_32() in USE_GTK2.
+
+2015-12-17  Araki Ken  <arakiken@users.sf.net>
+
+	* w3mimg/x11/x11_w3mimg.c:
+	w3mimgdisplay supports 32 bit depth screen. (e.g. gnome-terminal)
+	Origin: https://bitbucket.org/arakiken/w3m/commits/f9c22db8cfd1aaba9bb7301ef9ba51ed88d8bb40
+
+2015-12-17  Tatsuya Kinoshita  <tats@debian.org>
+
+	* w3mimg/x11/x11_w3mimg.c:
+	Revert "Fix handling visuals and colormaps incorrectly".
+	This reverts commit e24b4064daf3e022e370788a8c7267db40c37dda.
+
 2015-11-19  Tatsuya Kinoshita  <tats@debian.org>
 
 	* fm.h: Accept cookies by default.

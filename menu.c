@@ -1956,6 +1956,7 @@ accesskey_menu(Buffer *buf)
     }
     label[nitem] = NULL;
 
+    set_menu_frame();
     new_option_menu(&menu, label, &key, NULL);
 
     menu.initial = 0;
@@ -2067,7 +2068,6 @@ list_menu(Buffer *buf)
     }
     label[nitem] = NULL;
 
-    set_menu_frame();
     set_menu_frame();
     new_option_menu(&menu, label, &key, NULL);
 

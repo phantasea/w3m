@@ -1,3 +1,88 @@
+2016-05-11  Tatsuya Kinoshita  <tats@debian.org>
+
+	* config.guess, config.sub:
+	Update config.* with autotools-dev 20160430.1.
+
+2016-04-14  Tatsuya Kinoshita  <tats@debian.org>
+
+	* doc-de/README.func, doc-jp/README.func, doc/README.func:
+	* w3m-doc/sample/keymap.cgi: Cleanup obsolete INIT_MAILCAP.
+	Bug-Debian: https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=820902
+
+	* NEWS: Update NEWS.
+
+2016-04-08  Tatsuya Kinoshita  <tats@debian.org>
+
+	* libwc/johab.c: Fix segfault on bogus text for wc_N_to_johab1.
+	Bug-Debian: https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=820373
+
+2016-04-07  Tatsuya Kinoshita  <tats@debian.org>
+
+	* libwc/map/big5_ucs.map, libwc/map/cns11643_ucs.map:
+	* libwc/map/gb12345_ucs.map, libwc/map/gb2312_ucs.map:
+	* libwc/map/gbk_ucs.map, libwc/map/hkscs_ucs.map:
+	* libwc/map/jisx0208x0212x0213_ucs.map, libwc/map/ksx1001_ucs.map:
+	* libwc/map/sjis_ext_ucs.map, libwc/map/uhc_ucs.map, libwc/ucs.c:
+	* libwc/ucs.map: Fix segfault on bogus text for wc_any_to_ucs.
+	Bug-Debian: https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=820162
+
+2016-04-03  Tatsuya Kinoshita  <tats@debian.org>
+
+	* doc/FAQ.html, doc/MANUAL.html: Update English documents.
+
+2016-04-03  Markus Hiereth  <markus.hiereth@freenet.de>
+
+	* doc/FAQ.html, doc/MANUAL.html: Update English documents.
+	Origin: https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=772341#25
+
+2016-04-02  Tatsuya Kinoshita  <tats@debian.org>
+
+	* configure, configure.ac, doc-de/README.func, scripts/Makefile.in:
+	* scripts/w3mhelp-funcdesc.de.pl.in, scripts/w3mhelp.cgi.in:
+	Support German translated help messages (translation is in progress).
+	Bug-Debian: https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=765682
+
+	* doc-jp/w3m.1, doc/w3m.1: Update manpage footers to w3m 0.5.3.
+
+	* doc-jp/MANUAL.html, doc-jp/w3m.1, w3m-doc/outline.html.in:
+	* w3mhelp-lynx_ja.html.in, w3mhelp-w3m_ja.html.in:
+	Update Japanese documents for extbrowser4..9.
+
+2016-04-02  Justin B Rye  <justin.byam.rye@gmail.com>
+
+	* doc/FAQ.html, doc/MANUAL.html, doc/README.func, doc/menu.submenu:
+	* main.c, menu.c, scripts/w3mhelp-funcdesc.ja.pl.in:
+	* scripts/w3mhelp.cgi.in, w3mhelp-lynx_en.html.in:
+	* w3mhelp-w3m_en.html.in: English fixes.
+	cf. https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=772341#15
+	Origin: https://lists.debian.org/debian-l10n-english/2014/12/msg00002.html
+	Origin: https://lists.debian.org/debian-l10n-english/2014/12/msg00030.html
+	Origin: https://lists.debian.org/debian-l10n-english/2015/02/msg00011.html
+
+2016-03-30  Leo Famulari  <leo@famulari.name>
+
+	* url.c: Disable RC4.
+	Origin: http://git.savannah.gnu.org/cgit/guix.git/commit/?id=62339e2d493bf87a3aabe12e45458581e9705d83
+
+2016-03-29  Tatsuya Kinoshita  <tats@debian.org>
+
+	* url.c: Fix variable is reassigned a value before the old one has
+	been used.
+
+	* regex.c: Fix printf format specifier mismatch when REGEX_DEBUG.
+
+	* w3mimg/fb/fb.c: Fix invalid braces when not Linux or FreeBSD.
+
+	* local.c: Fix uninitialized variable when not HAVE_PUTENV.
+
+	* w3mimgdisplay.c: Fix realloc mistake for DrawImage.
+
+	* file.c: Fix mistake of unescape spaces for _doFileCopy.
+	cf. [w3m-dev-en 00751], [w3m-dev-en 00752] on 2002-06-09
+
+	* url.c: Fix style of array index is used before limits check.
+	Bug: https://sourceforge.net/p/w3m/feature-requests/25/
+
 2016-03-22  Tatsuya Kinoshita  <tats@debian.org>
 
 	* menu.c, proto.h: Fix build failure when not USE_MOUSE for sgrmouse.

@@ -1344,7 +1344,7 @@ mainMenu(int x, int y)
     popupMenu(x, y, &MainMenu);
 }
 
-DEFUN(mainMn, MAIN_MENU MENU, "Popup menu")
+DEFUN(mainMn, MAIN_MENU MENU, "Pop up menu")
 {
     Menu *menu = &MainMenu;
     char *data;
@@ -1372,7 +1372,7 @@ DEFUN(mainMn, MAIN_MENU MENU, "Popup menu")
 
 /* --- SelectMenu --- */
 
-DEFUN(selMn, SELECT_MENU, "Popup buffer selection menu")
+DEFUN(selMn, SELECT_MENU, "Pop up buffer selection menu")
 {
     int x = Currentbuf->cursorX + Currentbuf->rootX,
 	y = Currentbuf->cursorY + Currentbuf->rootY;
@@ -1517,7 +1517,7 @@ smDelBuf(char c)
 
 /* --- SelTabMenu --- */
 
-DEFUN(tabMn, TAB_MENU, "Popup tab selection menu")
+DEFUN(tabMn, TAB_MENU, "Pop up tab selection menu")
 {
     int x = Currentbuf->cursorX + Currentbuf->rootX,
 	y = Currentbuf->cursorY + Currentbuf->rootY;

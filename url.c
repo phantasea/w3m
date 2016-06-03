@@ -327,7 +327,7 @@ openSSLHandle(int sock, char *hostname, char **p_cert)
 	SSL_load_error_strings();
 	if (!(ssl_ctx = SSL_CTX_new(SSLv23_client_method())))
 	    goto eend;
-	SSL_CTX_set_cipher_list(ssl_ctx, "DEFAULT:!LOW:!EXP");
+	SSL_CTX_set_cipher_list(ssl_ctx, "DEFAULT:!LOW:!RC4:!EXP");
 	option = SSL_OP_ALL;
 	if (ssl_forbid_method) {
 	    if (strchr(ssl_forbid_method, '2'))
@@ -1337,7 +1337,7 @@ otherinfo(ParsedURL *target, ParsedURL *current, char *referer)
     }
     no_referer = NoSendReferer;
     no_referer_ptr = query_SCONF_NO_REFERER_FROM(current);
-    no_referer = NoSendReferer || (no_referer_ptr && *no_referer_ptr);
+    no_referer = no_referer || (no_referer_ptr && *no_referer_ptr);
     no_referer_ptr = query_SCONF_NO_REFERER_TO(target);
     no_referer = no_referer || (no_referer_ptr && *no_referer_ptr);
     if (!no_referer) {
@@ -2080,7 +2080,7 @@ filename_extension(char *path, int is_url)
 	    break;
     }
     if (*last_dot == '.') {
-	for (i = 1; last_dot[i] && i < 8; i++) {
+	for (i = 1; i < 8 && last_dot[i]; i++) {
 	    if (is_url && !IS_ALNUM(last_dot[i]))
 		break;
 	}

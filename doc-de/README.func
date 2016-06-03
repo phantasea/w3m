@@ -139,6 +139,6 @@ UP		Scroll up one line
 VERSION		Display version of w3m
 VIEW		View HTML source
 VIEW_BOOKMARK	View bookmarks
-VIEW_IMAGE	View image
+VIEW_IMAGE	Bild anzeigen
 WHEREIS 	Search forward
 WRAP_TOGGLE	Toggle search wrap mode

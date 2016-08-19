@@ -69,7 +69,7 @@ static int cur_status;
 #ifdef MENU_SELECT
 /* menu based <select>  */
 FormSelectOption *select_option;
-static int max_select = MAX_SELECT;
+int max_select = MAX_SELECT;
 static int n_select;
 static int cur_option_maxwidth;
 #endif				/* MENU_SELECT */
@@ -81,7 +81,7 @@ static int cur_textarea_rows;
 static int cur_textarea_readonly;
 static int n_textarea;
 static int ignore_nl_textarea;
-static int max_textarea = MAX_TEXTAREA;
+int max_textarea = MAX_TEXTAREA;
 
 static int http_response_code;
 
@@ -3025,9 +3025,9 @@ flushline(struct html_feed_environ *h_env, struct readbuffer *obuf, int indent,
 	tmp = Sprintf("<INPUT_ALT hseq=\"%d\" fid=\"%d\" name=\"%s\" type=\"%s\" value=\"%s\">",
 		     obuf->input_alt.hseq,
 		     obuf->input_alt.fid,
-		     obuf->input_alt.name->ptr,
-		     obuf->input_alt.type->ptr,
-		     obuf->input_alt.value->ptr);
+		     obuf->input_alt.name ? obuf->input_alt.name->ptr : "",
+		     obuf->input_alt.type ? obuf->input_alt.type->ptr : "",
+		     obuf->input_alt.value ? obuf->input_alt.value->ptr : "");
 	push_tag(obuf, tmp->ptr, HTML_INPUT_ALT);
     }
     if (!hidden_bold && obuf->in_bold)
@@ -3773,6 +3773,17 @@ process_button(struct parsed_tag *tag)
     if (v == FORM_UNKNOWN)
        return NULL;
 
+    switch (v) {
+    case FORM_INPUT_SUBMIT:
+    case FORM_INPUT_BUTTON:
+    case FORM_INPUT_RESET:
+	break;
+    default:
+	p = "submit";
+	v = FORM_INPUT_SUBMIT;
+	break;
+    }
+
     if (!q) {
        switch (v) {
        case FORM_INPUT_SUBMIT:
@@ -4189,7 +4200,7 @@ process_form_int(struct parsed_tag *tag, int fid)
 	forms = New_N(FormList *, forms_size);
 	form_stack = NewAtom_N(int, forms_size);
     }
-    else if (forms_size <= form_max) {
+    if (forms_size <= form_max) {
 	forms_size += form_max;
 	forms = New_Reuse(FormList *, forms, forms_size);
 	form_stack = New_Reuse(int, form_stack, forms_size);
@@ -4675,6 +4686,12 @@ HTMLtagproc1(struct parsed_tag *tag, struct html_feed_environ *h_env)
     case HTML_DD:
 	CLOSE_A;
 	CLOSE_DT;
+	if (h_env->envc == 0 ||
+	    (h_env->envc_real < h_env->nenv &&
+	     envs[h_env->envc].env != HTML_DL &&
+	     envs[h_env->envc].env != HTML_DL_COMPACT)) {
+	    PUSH_ENV(HTML_DL);
+	}
 	if (envs[h_env->envc].env == HTML_DL_COMPACT) {
 	    if (obuf->pos > envs[h_env->envc].indent)
 		flushline(h_env, obuf, envs[h_env->envc].indent, 0,
@@ -4998,9 +5015,18 @@ HTMLtagproc1(struct parsed_tag *tag, struct html_feed_environ *h_env)
 	}
 	if (parsedtag_exists(tag, ATTR_HBORDER))
 	    w = BORDER_NOWIN;
+#define MAX_CELLSPACING 1000
+#define MAX_CELLPADDING 1000
+#define MAX_VSPACE 1000
 	parsedtag_get_value(tag, ATTR_CELLSPACING, &x);
 	parsedtag_get_value(tag, ATTR_CELLPADDING, &y);
 	parsedtag_get_value(tag, ATTR_VSPACE, &z);
+	if (x > MAX_CELLSPACING)
+	    x = MAX_CELLSPACING;
+	if (y > MAX_CELLPADDING)
+	    y = MAX_CELLPADDING;
+	if (z > MAX_VSPACE)
+	    z = MAX_VSPACE;
 #ifdef ID_EXT
 	parsedtag_get_value(tag, ATTR_ID, &id);
 #endif				/* ID_EXT */
@@ -6005,7 +6031,7 @@ HTMLlineproc2body(Buffer *buf, Str (*feed) (), int llimit)
 		case HTML_TEXTAREA_INT:
 		    if (parsedtag_get_value(tag, ATTR_TEXTAREANUMBER,
 					    &n_textarea)
-			&& n_textarea < max_textarea) {
+			&& n_textarea >= 0 && n_textarea < max_textarea) {
 			textarea_str[n_textarea] = Strnew();
 		    }
 		    else
@@ -6022,7 +6048,7 @@ HTMLlineproc2body(Buffer *buf, Str (*feed) (), int llimit)
 #ifdef MENU_SELECT
 		case HTML_SELECT_INT:
 		    if (parsedtag_get_value(tag, ATTR_SELECTNUMBER, &n_select)
-			&& n_select < max_select) {
+			&& n_select >= 0 && n_select < max_select) {
 			select_option[n_select].first = NULL;
 			select_option[n_select].last = NULL;
 		    }
@@ -6105,7 +6131,8 @@ HTMLlineproc2body(Buffer *buf, Str (*feed) (), int llimit)
 	fclose(debug);
 #endif
     for (form_id = 1; form_id <= form_max; form_id++)
-	forms[form_id]->next = forms[form_id - 1];
+	if (forms[form_id])
+	    forms[form_id]->next = forms[form_id - 1];
     buf->formlist = (form_max >= 0) ? forms[form_max] : NULL;
     if (n_textarea)
 	addMultirowsForm(buf, buf->formitem);

@@ -21,6 +21,10 @@ po/POTFILES
 po/de.gmo
 po/ja.gmo
 po/stamp-po
+po/zh_CN.gmo
+po/zh_TW.gmo
+scripts/w3mhelp-funcdesc.de.pl
+scripts/w3mman/w3mman.de.1
 scripts/Makefile
 scripts/dirlist.cgi
 scripts/multipart/Makefile

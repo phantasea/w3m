@@ -760,7 +760,7 @@ do_refill(struct table *tbl, int row, int col, int maxlimit)
 	    struct parsed_tag *tag;
 	    if ((tag = parse_tag(&p, TRUE)) != NULL)
 		parsedtag_get_value(tag, ATTR_TID, &id);
-	    if (id >= 0 && id < tbl->ntable) {
+	    if (id >= 0 && id < tbl->ntable && tbl->tables[id].ptr) {
 		int alignment;
 		TextLineListItem *ti;
 		struct table *t = tbl->tables[id].ptr;
@@ -1722,6 +1722,10 @@ renderTable(struct table *t, int max_width, struct html_feed_environ *h_env)
 
     if (max_width < rulewidth)
 	max_width = rulewidth;
+
+#define MAX_TABWIDTH 10000
+    if (max_width > MAX_TABWIDTH)
+	max_width = MAX_TABWIDTH;
 
     check_maximum_width(t);
 

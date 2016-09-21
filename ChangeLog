@@ -1,3 +1,29 @@
+2016-08-30  Kuang-che Wu  <kcwu@google.com>
+
+	* Str.c: Fix potential heap buffer corruption due to Strgrow.
+	Origin: https://github.com/tats/w3m/pull/27
+
+2016-08-29  Tatsuya Kinoshita  <tats@debian.org>
+
+	* anchor.c:
+	Prevent segfault due to buffer overflows in addMultirowsForm.
+	Bug-Debian: https://github.com/tats/w3m/issues/21
+	Bug-Debian: https://github.com/tats/w3m/issues/26
+
+	* form.c: Prevent segfault for formUpdateBuffer.
+	Bug-Debian: https://github.com/tats/w3m/issues/13#issuecomment-242981906
+
+2016-08-24  Tatsuya Kinoshita  <tats@debian.org>
+
+	* table.c: Prevent segfault with malformed table_alt.
+	Bug-Debian: https://github.com/tats/w3m/issues/24
+
+	* form.c: Prevent segfault for formUpdateBuffer.
+	Bug-Debian: https://github.com/tats/w3m/issues/22
+
+	* table.c: Truncate max_width for renderTable.
+	Bug-Debian: https://github.com/tats/w3m/issues/25
+
 2016-08-20  Tatsuya Kinoshita  <tats@debian.org>
 
 	* file.c, parsetagx.c: Fix uninitialised values for <i> and <dd>.

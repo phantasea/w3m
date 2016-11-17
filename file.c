@@ -4926,13 +4926,13 @@ HTMLtagproc1(struct parsed_tag *tag, struct html_feed_environ *h_env)
 #ifdef USE_IMAGE
 	i = 0;
 	if (parsedtag_get_value(tag, ATTR_TOP_MARGIN, &i)) {
-	    if (i > obuf->top_margin)
-		obuf->top_margin = i;
+	    if ((short)i > obuf->top_margin)
+		obuf->top_margin = (short)i;
 	}
 	i = 0;
 	if (parsedtag_get_value(tag, ATTR_BOTTOM_MARGIN, &i)) {
-	    if (i > obuf->bottom_margin)
-		obuf->bottom_margin = i;
+	    if ((short)i > obuf->bottom_margin)
+		obuf->bottom_margin = (short)i;
 	}
 #endif
 	return 0;
@@ -4946,13 +4946,13 @@ HTMLtagproc1(struct parsed_tag *tag, struct html_feed_environ *h_env)
     case HTML_INPUT_ALT:
 	i = 0;
 	if (parsedtag_get_value(tag, ATTR_TOP_MARGIN, &i)) {
-	    if (i > obuf->top_margin)
-		obuf->top_margin = i;
+	    if ((short)i > obuf->top_margin)
+		obuf->top_margin = (short)i;
 	}
 	i = 0;
 	if (parsedtag_get_value(tag, ATTR_BOTTOM_MARGIN, &i)) {
-	    if (i > obuf->bottom_margin)
-		obuf->bottom_margin = i;
+	    if ((short)i > obuf->bottom_margin)
+		obuf->bottom_margin = (short)i;
 	}
 	if (parsedtag_get_value(tag, ATTR_HSEQ, &hseq)) {
 	    obuf->input_alt.hseq = hseq;
@@ -5021,6 +5021,12 @@ HTMLtagproc1(struct parsed_tag *tag, struct html_feed_environ *h_env)
 	parsedtag_get_value(tag, ATTR_CELLSPACING, &x);
 	parsedtag_get_value(tag, ATTR_CELLPADDING, &y);
 	parsedtag_get_value(tag, ATTR_VSPACE, &z);
+	if (x < 0)
+	    x = 0;
+	if (y < 0)
+	    y = 0;
+	if (z < 0)
+	    z = 0;
 	if (x > MAX_CELLSPACING)
 	    x = MAX_CELLSPACING;
 	if (y > MAX_CELLPADDING)
@@ -5827,7 +5833,8 @@ HTMLlineproc2body(Buffer *buf, Str (*feed) (), int llimit)
 			parsedtag_get_value(tag, ATTR_FID, &form_id);
 			parsedtag_get_value(tag, ATTR_TOP_MARGIN, &top);
 			parsedtag_get_value(tag, ATTR_BOTTOM_MARGIN, &bottom);
-			if (form_id < 0 || form_id > form_max || forms == NULL)
+			if (form_id < 0 || form_id > form_max ||
+			    forms == NULL || forms[form_id] == NULL)
 			    break;	/* outside of <form>..</form> */
 			form = forms[form_id];
 			if (hseq > 0) {
@@ -6038,7 +6045,7 @@ HTMLlineproc2body(Buffer *buf, Str (*feed) (), int llimit)
 			n_textarea = -1;
 		    break;
 		case HTML_N_TEXTAREA_INT:
-		    if (n_textarea >= 0) {
+		    if (a_textarea && n_textarea >= 0) {
 			FormItemList *item =
 			    (FormItemList *)a_textarea[n_textarea]->url;
 			item->init_value = item->value =
@@ -6056,7 +6063,7 @@ HTMLlineproc2body(Buffer *buf, Str (*feed) (), int llimit)
 			n_select = -1;
 		    break;
 		case HTML_N_SELECT_INT:
-		    if (n_select >= 0) {
+		    if (a_select && n_select >= 0) {
 			FormItemList *item =
 			    (FormItemList *)a_select[n_select]->url;
 			item->select_option = select_option[n_select].first;
@@ -6323,10 +6330,10 @@ HTMLlineproc0(char *line, struct html_feed_environ *h_env, int internal)
     while (*line != '\0') {
 	char *str, *p;
 	int is_tag = FALSE;
-	int pre_mode = (obuf->table_level >= 0) ? tbl_mode->pre_mode :
-	    obuf->flag;
-	int end_tag = (obuf->table_level >= 0) ? tbl_mode->end_tag :
-	    obuf->end_tag;
+	int pre_mode = (obuf->table_level >= 0 && tbl_mode) ?
+	    tbl_mode->pre_mode : obuf->flag;
+	int end_tag = (obuf->table_level >= 0 && tbl_mode) ?
+	    tbl_mode->end_tag : obuf->end_tag;
 
 	if (*line == '<' || obuf->status != R_ST_NORMAL) {
 	    /* 
@@ -6408,7 +6415,7 @@ HTMLlineproc0(char *line, struct html_feed_environ *h_env, int internal)
 	}
 
       proc_normal:
-	if (obuf->table_level >= 0) {
+	if (obuf->table_level >= 0 && tbl && tbl_mode) {
 	    /* 
 	     * within table: in <table>..</table>, all input tokens
 	     * are fed to the table renderer, and then the renderer
@@ -6441,6 +6448,7 @@ HTMLlineproc0(char *line, struct html_feed_environ *h_env, int internal)
 		    do_blankline(h_env, obuf, indent, 0, h_env->limit);
 		}
 		save_fonteffect(h_env, obuf);
+		initRenderTable();
 		renderTable(tbl, tbl_width, h_env);
 		restore_fonteffect(h_env, obuf);
 		obuf->flag &= ~RB_IGNORE_P;
@@ -7008,9 +7016,12 @@ completeHTMLstream(struct html_feed_environ *h_env, struct readbuffer *obuf)
 	obuf->table_level = MAX_TABLE - 1;
 
     while (obuf->table_level >= 0) {
+	int tmp = obuf->table_level;
 	table_mode[obuf->table_level].pre_mode
 	    &= ~(TBLM_SCRIPT | TBLM_STYLE | TBLM_PLAIN);
 	HTMLlineproc1("</table>", h_env);
+	if (obuf->table_level >= tmp)
+	    break;
     }
 }
 
@@ -7032,6 +7043,8 @@ print_internal_information(struct html_feed_environ *henv)
     if (form_max >= 0) {
 	FormList *fp;
 	for (i = 0; i <= form_max; i++) {
+	    if (forms[i] == NULL)
+		continue;
 	    fp = forms[i];
 	    s = Sprintf("<form_int fid=\"%d\" action=\"%s\" method=\"%s\"",
 			i, html_quote(fp->action->ptr),
@@ -7602,7 +7615,7 @@ conv_symbol(Line *l)
 		symbol = get_symbol(DisplayCharset, &w);
 #endif
 	    }
-	    Strcat_charp(tmp, symbol[(int)c]);
+	    Strcat_charp(tmp, symbol[(unsigned char)c % N_SYMBOL]);
 #ifdef USE_M17N
 	    p += len - 1;
 	    pr += len - 1;

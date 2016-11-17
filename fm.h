@@ -1024,7 +1024,7 @@ global char *BookmarkFile init(NULL);
 global int UseExternalDirBuffer init(TRUE);
 global char *DirBufferCommand init("file:///$LIB/dirlist" CGI_EXTENSION);
 #ifdef USE_DICT
-global int UseDictCommand init(FALSE);
+global int UseDictCommand init(TRUE);
 global char *DictCommand init("file:///$LIB/w3mdict" CGI_EXTENSION);
 #endif				/* USE_DICT */
 global int ignore_null_img_alt init(TRUE);
@@ -1109,6 +1109,7 @@ extern char *graph2_symbol[];
 extern int symbol_width;
 extern int symbol_width0;
 #define N_GRAPH_SYMBOL 32
+#define N_SYMBOL (N_GRAPH_SYMBOL + 14)
 #define SYMBOL_BASE 0x20
 global int no_rc_dir init(FALSE);
 global char *rc_dir init(NULL);

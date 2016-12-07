@@ -2311,8 +2311,12 @@ push_link(int cmd, int offset, int pos)
     struct link_stack *p;
     p = New(struct link_stack);
     p->cmd = cmd;
-    p->offset = offset;
-    p->pos = pos;
+    p->offset = (short)offset;
+    if (p->offset < 0)
+	p->offset = 0;
+    p->pos = (short)pos;
+    if (p->pos < 0)
+	p->pos = 0;
     p->next = link_stack;
     link_stack = p;
 }
@@ -2599,6 +2603,8 @@ static void
 proc_mchar(struct readbuffer *obuf, int pre_mode,
 	   int width, char **str, Lineprop mode)
 {
+    size_t len;
+
     check_breakpoint(obuf, pre_mode, *str);
     obuf->pos += width;
     Strcat_charp_n(obuf->line, *str, get_mclen(*str));
@@ -2607,7 +2613,10 @@ proc_mchar(struct readbuffer *obuf, int pre_mode,
 	if (**str != ' ')
 	    obuf->prev_ctype = mode;
     }
-    (*str) += get_mclen(*str);
+    len = get_mclen(*str);
+    if (len > strlen(*str))
+	len = strlen(*str);
+    (*str) += len;
     obuf->flag |= RB_NFLUSHED;
 }
 
@@ -4012,7 +4021,7 @@ process_textarea(struct parsed_tag *tag, int width)
     cur_textarea_size = 20;
     if (parsedtag_get_value(tag, ATTR_COLS, &p)) {
 	cur_textarea_size = atoi(p);
-	if (p[strlen(p) - 1] == '%')
+	if (strlen(p) > 0 && p[strlen(p) - 1] == '%')
 	    cur_textarea_size = width * cur_textarea_size / 100 - 2;
 	if (cur_textarea_size <= 0) {
 	    cur_textarea_size = 20;
@@ -4378,8 +4387,9 @@ getMetaRefreshParam(char *q, Str *refresh_uri)
 		r++;
 	    s_tmp = Strnew_charp_n(q, r - q);
 
-	    if (s_tmp->ptr[s_tmp->length - 1] == '\"'          /* " */
-	       || s_tmp->ptr[s_tmp->length - 1] == '\'') {     /* ' */
+	    if (s_tmp->length > 0 &&
+	        (s_tmp->ptr[s_tmp->length - 1] == '\"' ||	/* " */
+		 s_tmp->ptr[s_tmp->length - 1] == '\'')) {	/* ' */
 		s_tmp->length--;
 		s_tmp->ptr[s_tmp->length] = '\0';
 	    }
@@ -5726,7 +5736,7 @@ HTMLlineproc2body(Buffer *buf, Str (*feed) (), int llimit)
 			a_href->end.pos = pos;
 			if (a_href->start.line == a_href->end.line &&
 			    a_href->start.pos == a_href->end.pos) {
-			    if (buf->hmarklist &&
+			    if (buf->hmarklist && a_href->hseq >= 0 &&
 				a_href->hseq < buf->hmarklist->nmark)
 				buf->hmarklist->marks[a_href->hseq].invalid = 1;
 			    a_href->hseq = -1;
@@ -6431,6 +6441,8 @@ HTMLlineproc0(char *line, struct html_feed_environ *h_env, int internal)
 		if (obuf->table_level >= 0) {
 		    struct table *tbl0 = tables[obuf->table_level];
 		    str = Sprintf("<table_alt tid=%d>", tbl0->ntable)->ptr;
+		    if (tbl0->row < 0)
+			continue;
 		    pushTable(tbl0, tbl);
 		    tbl = tbl0;
 		    tbl_mode = &table_mode[obuf->table_level];
@@ -6606,7 +6618,8 @@ HTMLlineproc0(char *line, struct html_feed_environ *h_env, int internal)
 		indent = h_env->envs[h_env->envc].indent;
 		if (obuf->bp.pos - i > indent) {
 		    Str line;
-		    append_tags(obuf);
+		    append_tags(obuf);	/* may reallocate the buffer */
+		    bp = obuf->line->ptr + obuf->bp.len;
 		    line = Strnew_charp(bp);
 		    Strshrink(obuf->line, obuf->line->length - obuf->bp.len);
 #ifdef FORMAT_NICE

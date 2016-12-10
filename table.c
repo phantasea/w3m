@@ -428,8 +428,9 @@ visible_length(char *str)
     Str tagbuf = Strnew();
     char *t, *r2;
     int amp_len = 0;
+    char *strz = str + strlen(str);
 
-    while (*str) {
+    while (str < strz) {
 	prev_status = status;
 	if (next_status(*str, &status)) {
 #ifdef USE_M17N
@@ -509,8 +510,9 @@ int
 visible_length_plain(char *str)
 {
     int len = 0, max_len = 0;
+    char *strz = str + strlen(str);
 
-    while (*str) {
+    while (str < strz) {
 	if (*str == '\t') {
 	    do {
 		len++;
@@ -2250,6 +2252,7 @@ skip_space(struct table *t, char *line, struct table_linfo *linfo,
     Str prevchar = linfo->prevchar;
     int w = linfo->length;
     int min = 1;
+    char *linez;
 
     if (*line == '<' && line[strlen(line) - 1] == '>') {
 	if (checkminimum)
@@ -2257,7 +2260,8 @@ skip_space(struct table *t, char *line, struct table_linfo *linfo,
 	return 0;
     }
 
-    while (*line) {
+    linez = line + strlen(line);
+    while (line < linez) {
 	char *save = line, *c = line;
 	int ec, len, wlen, plen;
 	ctype = get_mctype(line);

@@ -2603,8 +2603,6 @@ static void
 proc_mchar(struct readbuffer *obuf, int pre_mode,
 	   int width, char **str, Lineprop mode)
 {
-    size_t len;
-
     check_breakpoint(obuf, pre_mode, *str);
     obuf->pos += width;
     Strcat_charp_n(obuf->line, *str, get_mclen(*str));
@@ -2613,10 +2611,7 @@ proc_mchar(struct readbuffer *obuf, int pre_mode,
 	if (**str != ' ')
 	    obuf->prev_ctype = mode;
     }
-    len = get_mclen(*str);
-    if (len > strlen(*str))
-	len = strlen(*str);
-    (*str) += len;
+    (*str) += get_mclen(*str);
     obuf->flag |= RB_NFLUSHED;
 }
 
@@ -3460,7 +3455,7 @@ process_img(struct parsed_tag *tag, int width)
 	if (use_image) {
 	    if (n > nw) {
 		char *r;
-		for (r = q, n = 0; r; r += get_mclen(r), n += get_mcwidth(r)) {
+		for (r = q, n = 0; *r; r += get_mclen(r), n += get_mcwidth(r)) {
 		    if (n + get_mcwidth(r) > nw)
 			break;
 		}
@@ -4098,7 +4093,9 @@ feed_textarea(char *str)
 	    Strcat_charp(textarea_str[n_textarea], "\r\n");
 	    str++;
 	}
-	else if (*str != '\r')
+	else if (*str == '\r')
+	    str++;
+	else
 	    Strcat_char(textarea_str[n_textarea], *(str++));
     }
 }
@@ -6359,7 +6356,7 @@ HTMLlineproc0(char *line, struct html_feed_environ *h_env, int internal)
 	    }
 	    if (h_env->tagbuf->length == 0)
 		continue;
-	    str = h_env->tagbuf->ptr;
+	    str = Strdup(h_env->tagbuf)->ptr;
 	    if (*str == '<') {
 		if (str[1] && REALLY_THE_BEGINNING_OF_A_TAG(str))
 		    is_tag = TRUE;

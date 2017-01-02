@@ -278,10 +278,10 @@ form_update_line(Line *line, char **str, int spos, int epos, int width,
 		 int newline, int password)
 {
     int c_len = 1, c_width = 1, w, i, len, pos;
-    char *p, *buf, *q = *str + strlen(*str);
+    char *p, *buf;
     Lineprop c_type, effect, *prop;
 
-    for (p = *str, w = 0, pos = 0; p < q && w < width;) {
+    for (p = *str, w = 0, pos = 0; *p && w < width;) {
 	c_type = get_mctype((unsigned char *)p);
 #ifdef USE_M17N
 	c_len = get_mclen(p);
@@ -320,13 +320,14 @@ form_update_line(Line *line, char **str, int spos, int epos, int width,
     pos += width - w;
 
     len = line->len + pos + spos - epos;
-    buf = New_N(char, len);
+    buf = New_N(char, len + 1);
+    buf[len] = '\0';
     prop = New_N(Lineprop, len);
     bcopy((void *)line->lineBuf, (void *)buf, spos * sizeof(char));
     bcopy((void *)line->propBuf, (void *)prop, spos * sizeof(Lineprop));
 
     effect = CharEffect(line->propBuf[spos]);
-    for (p = *str, w = 0, pos = spos; p < q && w < width;) {
+    for (p = *str, w = 0, pos = spos; *p && w < width;) {
 	c_type = get_mctype((unsigned char *)p);
 #ifdef USE_M17N
 	c_len = get_mclen(p);
@@ -347,7 +348,7 @@ form_update_line(Line *line, char **str, int spos, int epos, int width,
 	    if (w + c_width > width)
 		break;
 #endif
-	    for (i = 0; pos < len && i < c_width; i++) {
+	    for (i = 0; i < c_width; i++) {
 		buf[pos] = '*';
 		prop[pos] = effect | PC_ASCII;
 		pos++;
@@ -373,7 +374,7 @@ form_update_line(Line *line, char **str, int spos, int epos, int width,
 	    pos++;
 #ifdef USE_M17N
 	    c_type = (c_type & ~PC_WCHAR1) | PC_WCHAR2;
-	    for (i = 1; pos < len && p + i < q && i < c_len; i++) {
+	    for (i = 1; i < c_len; i++) {
 		buf[pos] = p[i];
 		prop[pos] = effect | c_type;
 		pos++;
@@ -383,12 +384,12 @@ form_update_line(Line *line, char **str, int spos, int epos, int width,
 	}
 	p += c_len;
     }
-    for (; pos < len && w < width; w++) {
+    for (; w < width; w++) {
 	buf[pos] = ' ';
 	prop[pos] = effect | PC_ASCII;
 	pos++;
     }
-    if (p < q && newline) {
+    if (newline) {
 	if (!FoldTextarea) {
 	    while (*p && *p != '\r' && *p != '\n')
 		p++;
@@ -398,8 +399,6 @@ form_update_line(Line *line, char **str, int spos, int epos, int width,
 	if (*p == '\n')
 	    p++;
     }
-    if (p > q)
-	p = q;
     *str = p;
 
     bcopy((void *)&line->lineBuf[epos], (void *)&buf[pos],
@@ -492,7 +491,8 @@ formUpdateBuffer(Anchor *a, Buffer *buf, FormItemList *form)
 		spos = a->start.pos;
 		epos = a->end.pos;
 	    }
-	    if (a->start.line != a->end.line || spos > epos || epos >= l->len || spos < 0 || epos < 0)
+	    if (a->start.line != a->end.line || spos > epos || epos >= l->len ||
+		spos < 0 || epos < 0 || COLPOS(l, epos) < col)
 		break;
 	    pos = form_update_line(l, &p, spos, epos, COLPOS(l, epos) - col,
 				   rows > 1,

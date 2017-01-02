@@ -129,13 +129,18 @@ wtf_strwidth(wc_uchar *p)
     return w;
 }
 
-/*
 size_t
 wtf_len1(wc_uchar *p)
 {
-    return (size_t)WTF_LEN_MAP[*p];
+    size_t len, len_max = WTF_LEN_MAP[*p];
+
+    for (len = 0; *(p + len); len++)
+	if (len == len_max)
+	    break;
+    if (len == 0)
+	len = 1;
+    return len;
 }
-*/
 
 size_t
 wtf_len(wc_uchar *p)
@@ -168,12 +173,12 @@ wtf_type(wc_uchar *p)
     ((p)[3] = (((c) >>  7) & 0x7f) | 0x80), \
     ((p)[4] = ( (c)        & 0x7f) | 0x80)
 #define wtf_to_wcs16(p) \
-    (strlen(p) < 3 ? 0 : \
+    ((p)[0] == 0 || (p)[1] == 0 || (p)[2] == 0 ? 0 : \
       ((wc_uint32)((p)[0] & 0x03) << 14) \
     | ((wc_uint32)((p)[1] & 0x7f) <<  7) \
     | ((wc_uint32)((p)[2] & 0x7f)      ))
 #define wtf_to_wcs32(p) \
-    (strlen(p) < 5 ? 0 : \
+    ((p)[0] == 0 || (p)[1] == 0 || (p)[2] == 0 || (p)[3] == 0 || (p)[4] == 0 ? 0 : \
       ((wc_uint32)((p)[0] & 0x0f) << 28) \
     | ((wc_uint32)((p)[1] & 0x7f) << 21) \
     | ((wc_uint32)((p)[2] & 0x7f) << 14) \
@@ -398,10 +403,7 @@ wtf_parse1(wc_uchar **p)
 	} else
 	    cc.code = *(q++);
     } else {
-	cc.ccs = WC_CCS_US_ASCII;
-	cc.code = (wc_uint32)' ';
-	if (*q)
-	    cc.ccs = (wc_uint32)CCS_MAP[*(q++) - 0x80] << 8;
+	cc.ccs = (wc_uint32)CCS_MAP[*(q++) - 0x80] << 8;
 	switch (WC_CCS_TYPE(cc.ccs)) {
 	case WC_CCS_A_CS94:
 	case WC_CCS_A_CS96:
@@ -411,6 +413,9 @@ wtf_parse1(wc_uchar **p)
 	    if (*q && *(q+1)) {
 		cc.ccs |= *(q++) & 0x7f;
 		cc.code = *(q++);
+	    } else {
+		cc.ccs = WC_CCS_US_ASCII;
+		cc.code = (wc_uint32)' ';
 	    }
 	    break;
 	case WC_CCS_A_CS94W:
@@ -420,6 +425,9 @@ wtf_parse1(wc_uchar **p)
 		cc.ccs |= *(q++) & 0x7f;
 		cc.code = ((wc_uint32)*q << 8) | *(q+1);
 		q += 2;
+	    } else {
+		cc.ccs = WC_CCS_US_ASCII;
+		cc.code = (wc_uint32)' ';
 	    }
 	    break;
 	case WC_CCS_A_WCS16:
@@ -428,6 +436,9 @@ wtf_parse1(wc_uchar **p)
 		cc.ccs |= (*q & 0x7c) >> 2;
 		cc.code = wtf_to_wcs16(q);
 		q += 3;
+	    } else {
+		cc.ccs = WC_CCS_US_ASCII;
+		cc.code = (wc_uint32)' ';
 	    }
 	    break;
 	case WC_CCS_A_WCS32:
@@ -436,7 +447,15 @@ wtf_parse1(wc_uchar **p)
 		cc.ccs |= (*q & 0x70) >> 4;
 		cc.code = wtf_to_wcs32(q);
 		q += 5;
+	    } else {
+		cc.ccs = WC_CCS_US_ASCII;
+		cc.code = (wc_uint32)' ';
 	    }
+	    break;
+	default:
+	/* case 0: */
+	    cc.ccs = WC_CCS_US_ASCII;
+	    cc.code = (wc_uint32)' ';
 	    break;
 	}
     }

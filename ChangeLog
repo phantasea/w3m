@@ -1,3 +1,110 @@
+2017-01-02  Tatsuya Kinoshita  <tats@debian.org>
+
+	* NEWS: Update NEWS.
+
+2016-12-24  Tatsuya Kinoshita  <tats@debian.org>
+
+	* libwc/wtf.c:
+	Prevent overflow beyond the end of string in wtf_parse1().
+	Bug-Debian: https://github.com/tats/w3m/issues/68
+
+	* libwc/wtf.c:
+	Revert "Prevent overflow beyond the end of string in wtf_parse1()".
+	This reverts commit 998b6f91d4b02e8bf90b7744dfabc8cccdf9d4f9.
+	Bug-Debian: https://github.com/tats/w3m/issues/86
+	cf. http://emacs-w3m.namazu.org/ml/msg12505.html
+
+	* form.c:
+	Preserve one byte for end of string character in form_update_line().
+	Bug-Debian: https://github.com/tats/w3m/issues/68#issuecomment-266214643
+
+	* form.c:
+	Prevent invalid form_update_line() call in formUpdateBuffer().
+	Bug-Debian: https://github.com/tats/w3m/issues/82
+
+2016-12-20  Tatsuya Kinoshita  <tats@debian.org>
+
+	* form.c:
+	Revert "Preserve one byte for end of string character in form_update_line()".
+	This reverts commit a4152aaaea5cb51c9018880a1295e498c38889bf.
+
+2016-12-18  Tatsuya Kinoshita  <tats@debian.org>
+
+	* file.c: Prevent heap-use-after-free read in HTMLlineproc0().
+	Bug-Debian: https://github.com/tats/w3m/issues/81
+
+	* file.c: Prevent infinite loop in feed_textarea().
+	Bug-Debian: https://github.com/tats/w3m/issues/85
+
+	* form.c:
+	Revert "Prevent overflow beyond the end of string in form_update_line()".
+	This reverts commit 9ccaa1dd0dac6f9b35a649ae9901c225421500f6.
+
+	* form.c:
+	Revert "Prevent overflow beyond the end of string in form_update_line()".
+	This reverts commit e0efc127ff20cbeb931847af1c9b353056340fbd.
+
+2016-12-15  Tatsuya Kinoshita  <tats@debian.org>
+
+	* libwc/wtf.c:
+	Prevent overflow beyond the end of string for wtf to wcs macros.
+	Bug-Debian: https://github.com/tats/w3m/issues/77
+
+	* libwc/wtf.c:
+	Revert "Prevent overflow beyond the end of string for wtf to wcs macros".
+	This reverts commit b4d27ba5ccffaa38e968c2bf3a8eeb9cd43928ff.
+
+	* file.c, libwc/wtf.c, libwc/wtf.h:
+	Prevent overflow beyond the end of string in caller of get_mclen().
+	Bug-Debian: https://github.com/tats/w3m/issues/59
+	Bug-Debian: https://github.com/tats/w3m/issues/73
+	Bug-Debian: https://github.com/tats/w3m/issues/74
+	Bug-Debian: https://github.com/tats/w3m/issues/75
+	Bug-Debian: https://github.com/tats/w3m/issues/76
+	Bug-Debian: https://github.com/tats/w3m/issues/78
+	Bug-Debian: https://github.com/tats/w3m/issues/79
+	Bug-Debian: https://github.com/tats/w3m/issues/80
+	Bug-Debian: https://github.com/tats/w3m/issues/83
+	Bug-Debian: https://github.com/tats/w3m/issues/84
+
+	* file.c:
+	Revert "Prevent overflow beyond the end of string in proc_mchar()".
+	This reverts commit 512ed467d12615f5ef40d0d28272e5662d8438ea.
+
+	* table.c:
+	Revert "Prevent overflow beyond the end of string in visible_length()".
+	This reverts commit a932f78a6d8c105036ffeedf01215c1f6a0e0b71.
+
+	* table.c:
+	Revert "Prevent overflow beyond the end of string in skip_space()".
+	This reverts commit e757b43bcf8c439c167f62b6d3317ee9518cabbf.
+
+	* table.c:
+	Revert "Prevent overflow beyond the end of string in visible_length_plain()".
+	This reverts commit f763b8ebf5441cb44d2c0234565fadd5eb1c87a5.
+
+	* form.c:
+	Revert "Prevent overflow beyond the end of string in textfieldrep()".
+	This reverts commit 77d8d8d6576d8afc0f6b2e09bb88c7ca9dba58bb.
+
+	* file.c:
+	Revert "Prevent overflow beyond the end of string in proc_mchar()".
+	This reverts commit e79d0ec2a00369a6af24007a1f2bb5e876e2c847.
+
+2016-12-13  Tatsuya Kinoshita  <tats@debian.org>
+
+	* file.c: Prevent overflow beyond the end of string in proc_mchar().
+	Bug-Debian: https://github.com/tats/w3m/issues/80
+	cf. https://github.com/tats/w3m/issues/59
+
+	* form.c: Prevent overflow beyond the end of string in textfieldrep().
+	Bug-Debian: https://github.com/tats/w3m/issues/79
+
+	* form.c:
+	Preserve one byte for end of string character in form_update_line().
+	Bug-Debian: https://github.com/tats/w3m/issues/82
+	cf. https://github.com/tats/w3m/issues/68#issuecomment-266214643
+
 2016-12-10  Tatsuya Kinoshita  <tats@debian.org>
 
 	* libwc/wtf.c: Prevent overflow beyond the end of string in wtf_len().

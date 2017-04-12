@@ -332,12 +332,13 @@ make_lastline_message(Buffer *buf)
     }
     else
 	/* FIXME: gettextize? */
-	Strcat_charp(msg, "Viewing");
+    //del by sim1
+	//Strcat_charp(msg, "Viewing ");
 #ifdef USE_SSL
     if (buf->ssl_certificate)
-	Strcat_charp(msg, "[SSL]");
+	Strcat_charp(msg, "[SSL] ");
 #endif
-    Strcat_charp(msg, " <");
+    Strcat_charp(msg, "<");
     Strcat_charp(msg, buf->buffername);
 
     if (s) {
@@ -481,9 +482,13 @@ displayBuffer(Buffer *buf, int mode)
 	delayed_msg = NULL;
 	refresh();
     }
+    //mod by sim1 *******
+    //EFFECT_MARK_START;
     standout();
     message(msg->ptr, buf->cursorX + buf->rootX, buf->cursorY + buf->rootY);
     standend();
+    //EFFECT_MARK_END;
+    //mod by sim1 *******
     term_title(conv_to_system(buf->buffername));
     refresh();
 #ifdef USE_IMAGE
@@ -611,35 +616,43 @@ redrawNLine(Buffer *buf, int n)
 	    addstr(mouse_action.menu_str);
 #endif
 	clrtoeolx();
+    //add by sim1
+    standout();
+    //EFFECT_MARK_START;
 	for (t = FirstTab; t; t = t->nextTab) {
 	    move(t->y, t->x1);
 	    if (t == CurrentTab)
-		bold();
+        {
+            bold();
+            EFFECT_IMAGE_START;
+        }
 	    addch('[');
 	    l = t->x2 - t->x1 - 1 - get_strwidth(t->currentBuffer->buffername);
 	    if (l < 0)
 		l = 0;
 	    if (l / 2 > 0)
 		addnstr_sup(" ", l / 2);
-	    if (t == CurrentTab)
-		EFFECT_ACTIVE_START;
 	    addnstr(t->currentBuffer->buffername, t->x2 - t->x1 - l);
-	    if (t == CurrentTab)
-		EFFECT_ACTIVE_END;
 	    if ((l + 1) / 2 > 0)
 		addnstr_sup(" ", (l + 1) / 2);
 	    move(t->y, t->x2);
 	    addch(']');
 	    if (t == CurrentTab)
-		boldend();
+        {
+            boldend();
+            EFFECT_IMAGE_END;
+        }
 	}
+    //add by sim1
+    standend();
+    //EFFECT_MARK_END;
 #if 0
 	move(0, COLS - 2);
 	addstr(" x");
 #endif
 	move(LastTab->y + 1, 0);
 	for (i = 0; i < COLS; i++)
-	    addch('~');
+	    addch('-');  //mod by sim1
     }
     for (i = 0, l = buf->topLine; i < buf->LINES; i++, l = l->next) {
 	if (i >= buf->LINES - n || i < -n)

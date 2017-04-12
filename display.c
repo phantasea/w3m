@@ -484,9 +484,11 @@ displayBuffer(Buffer *buf, int mode)
     }
     //mod by sim1 *******
     //EFFECT_MARK_START;
+    bold();
     standout();
     message(msg->ptr, buf->cursorX + buf->rootX, buf->cursorY + buf->rootY);
     standend();
+    boldend();
     //EFFECT_MARK_END;
     //mod by sim1 *******
     term_title(conv_to_system(buf->buffername));

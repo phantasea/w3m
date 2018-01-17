@@ -263,7 +263,7 @@ fusage(FILE * f, int err)
 	    "    -cookie          use cookie (-no-cookie: don't use cookie)\n");
 #endif				/* USE_COOKIE */
     fprintf(f, "    -graph           use DEC special graphics for border of table and menu\n");
-    fprintf(f, "    -no-graph        use ACII character for border of table and menu\n");
+    fprintf(f, "    -no-graph        use ASCII character for border of table and menu\n");
 #if 1				/* pager requires -s */
     fprintf(f, "    -s               squeeze multiple blank lines\n");
 #else
@@ -4450,7 +4450,7 @@ DEFUN(backBf, BACK, "Close current buffer and return to the one below in stack")
 	}
 	else
 	    /* FIXME: gettextize? */
-	    disp_message("Can't back...", TRUE);
+	    disp_message("Can't go back...", TRUE);
 	return;
     }
 

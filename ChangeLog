@@ -1,3 +1,30 @@
+2018-01-25  Tatsuya Kinoshita  <tats@debian.org>
+
+	* ChangeLog, NEWS: Add CVE IDs.
+	cf. https://security-tracker.debian.org/tracker/source-package/w3m
+
+2018-01-21  Tatsuya Kinoshita  <tats@debian.org>
+
+	* NEWS: Update NEWS.
+
+	* scripts/Makefile.in: Do not remove w3mdict.cgi when "make distclean".
+
+	* config.h.dist, config.h.in, configure, configure.ac, main.c, rc.c:
+	Make temporary directory safely when ~/.w3m is unwritable.
+	Bug-Debian: https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=888097
+	[CVE-2018-6198]
+
+	* rc.c: Suppress error messages when ~/.w3m is unwritable.
+	Bug-Debian: https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=871425
+
+2018-01-20  Tatsuya Kinoshita  <tats@debian.org>
+
+	* config.guess, config.sub:
+	Update config.* with autotools-dev 20171216.1.
+
+	* table.c: Prevent negative indent value in feed_table_block_tag().
+	Bug-Debian: https://github.com/tats/w3m/issues/88 [CVE-2018-6196]
+
 2018-01-06  Tatsuya Kinoshita  <tats@debian.org>
 
 	* doc-jp/README.SSL: Doc fix for ssl_forbid_method.
@@ -19,7 +46,7 @@
 2017-12-27  Tatsuya Kinoshita  <tats@debian.org>
 
 	* form.c: Prevent invalid columnPos() call in formUpdateBuffer().
-	Bug-Debian: https://github.com/tats/w3m/issues/89
+	Bug-Debian: https://github.com/tats/w3m/issues/89 [CVE-2018-6197]
 
 	* main.c: Typo fix in fusage().
 	Bug-Debian: https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=878106

@@ -1,3 +1,15 @@
+2018-03-04  Jia Zhouyang  <jiazhouyang@nudt.edu.cn>
+
+	* url.c: Add error handling code for fopen.
+	Check the return code of fopen, and return when it fails.
+
+	* file.c: Add error handling code for fopen.
+	Check the return value of fopen, and add proper error handling code.
+
+	* local.c: Add error handling for chdir.
+	When chdir fails, print error message and exit.
+	Bug-Debian: https://github.com/tats/w3m/pull/96
+
 2018-01-25  Tatsuya Kinoshita  <tats@debian.org>
 
 	* ChangeLog, NEWS: Add CVE IDs.
@@ -42,6 +54,7 @@
 
 	* w3mimg/fb/fb_w3mimg.c: Accept TERM=fbterm.
 	cf. https://bushowhige.blogspot.jp/2015/01/fbterm-w3m-img.html
+	Bug-Debian: https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=590668
 
 2017-12-27  Tatsuya Kinoshita  <tats@debian.org>
 

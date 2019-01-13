@@ -1,3 +1,49 @@
+2019-01-05  Tatsuya Kinoshita  <tats@debian.org>
+
+	* NEWS: Update NEWS.
+
+	* config.guess, config.sub:
+	Update config.* with autotools-dev 20180224.1.
+
+2019-01-05  Akinori Hattori  <hattya@gentoo.org>
+
+	* w3mimg/fb/fb_imlib2.c: Fix dependency for Imlib2.
+	Bug-Gentoo: https://bugs.gentoo.org/605930
+	Origin: https://gitweb.gentoo.org/repo/gentoo.git/commit/?id=97d6e3e6839898829e8cce211b97a7fa77f5d06e
+
+2018-12-22  Tatsuya Kinoshita  <tats@debian.org>
+
+	* scripts/w3mman/w3mman.1.in, scripts/w3mman/w3mman.in:
+	Fix square brackets.
+
+2018-12-21  Nemo Inis  <nemoinis@hotmail.com>
+
+	* scripts/w3mman/w3mman.1.in, scripts/w3mman/w3mman.in:
+	* scripts/w3mman/w3mman2html.cgi.in:
+	w3mman support for section number during keyword search.
+	Origin: https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=916968#5
+
+2018-10-26  Ben Wong  <bugs.debian.org@wongs.net>
+
+	* buffer.c, display.c:
+	Fix that the MarkAllPages option works as originally intended.
+	Bug-Debian: https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=911929
+
+2018-10-26  Tatsuya Kinoshita  <tats@debian.org>
+
+	* istream.c, url.c: Indentation fix.
+
+2018-10-24  Mark Wright  <gienah@gentoo.org>
+
+	* istream.c, url.c: Do not use deprecated features with openssl-1.1.
+	Bug-Gentoo: https://bugs.gentoo.org/592510
+	Bug-Debian: https://github.com/tats/w3m/pull/103
+
+2018-05-20  Andrew Santosa  <santosa_1999@yahoo.com>
+
+	* po/Makefile.in.in: Added check for : command not producing .gmo file.
+	Bug-Debian: https://github.com/tats/w3m/pull/99
+
 2018-03-24  Tatsuya Kinoshita  <tats@debian.org>
 
 	* table.c: Respect simple_preserve_space for table cells.

@@ -504,6 +504,10 @@ displayBuffer(Buffer *buf, int mode)
 	save_current_buf = buf;
     }
 #endif
+    if (mode == B_FORCE_REDRAW &&  (buf->check_url & CHK_URL) ) {
+	chkURLBuffer(buf);
+	displayBuffer(buf, B_NORMAL);
+    }
 }
 
 static void

@@ -8209,6 +8209,12 @@ _doFileCopy(char *tmpf, char *defstr, int download)
 			      defstr, IN_COMMAND, SaveHist);
 	    if (q == NULL || *q == '\0')
 		return FALSE;
+		//add by sim1 *****************
+		if (strstr(q, ".html") == NULL)
+		{
+			strcat(q, ".html");
+		}
+		//add by sim1 *****************
 	    p = conv_to_system(q);
 	}
 	if (*p == '|' && PermitSaveToPipe)

@@ -89,6 +89,7 @@ extern void prevBf(void);
 extern void backBf(void);
 extern void deletePrevBuf(void);
 extern void goURL(void);
+extern void goHome(void);
 extern void gorURL(void);
 /*********add by chris*********/
 extern void goSrchBaidu(void);

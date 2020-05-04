@@ -2378,10 +2378,10 @@ DEFUN(execsh, EXEC_SHELL SHELL, "Execute shell command and display output")
 	printf("\n");
 	system(cmd);
 	/* FIXME: gettextize? */
-	printf("\n[Hit any key]");
-	fflush(stdout);
+	//printf("\n[Hit any key]");  //del by sim1
+	//fflush(stdout);  //del by sim1
 	fmInit();
-	getch();
+	//getch();  //del by sim1
     }
     displayBuffer(Currentbuf, B_FORCE_REDRAW);
 }

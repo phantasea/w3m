@@ -1285,7 +1285,18 @@ disp_message_nsec(char *s, int redraw_current, int sec, int purge, int mouse)
 void
 disp_message(char *s, int redraw_current)
 {
+    //mod by sim1: color DIY
+#ifdef USE_ANSI_COLOR
+    setfcolor(1);
+    setbcolor(7);
+    bold();
+#endif
     disp_message_nsec(s, redraw_current, 10, FALSE, TRUE);
+#ifdef USE_ANSI_COLOR
+    boldend();
+    setfcolor(basic_color);
+    setbcolor(bg_color);
+#endif
 }
 #ifdef USE_MOUSE
 void

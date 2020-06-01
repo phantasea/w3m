@@ -328,7 +328,7 @@ make_lastline_message(Buffer *buf)
 	int cl = buf->currentLine->real_linenumber;
 	int ll = buf->lastLine->real_linenumber;
 	int r = (int)((double)cl * 100.0 / (double)(ll ? ll : 1) + 0.5);
-	Strcat(msg, Sprintf("%d/%d (%d%%)", cl, ll, r));
+	Strcat(msg, Sprintf("%d/%d (%d%%) | ", cl, ll, r));
     }
     else
 	/* FIXME: gettextize? */

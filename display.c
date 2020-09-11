@@ -1287,8 +1287,8 @@ disp_message(char *s, int redraw_current)
 {
     //mod by sim1: color DIY
 #ifdef USE_ANSI_COLOR
-    setfcolor(1);
-    setbcolor(7);
+    setfcolor(7);
+    setbcolor(1);
     bold();
 #endif
     disp_message_nsec(s, redraw_current, 10, FALSE, TRUE);

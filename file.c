@@ -1974,6 +1974,16 @@ loadGeneralFile(char *path, ParsedURL *volatile current, char *referer,
 	    t = "gopher:directory";
 	    TRAP_OFF;
 	    goto page_loaded;
+	case '7':
+	    if(pu.query != NULL) {
+		page = loadGopherDir(&f, &pu, &charset);
+		t = "gopher:directory";
+	    } else {
+		page = loadGopherSearch(&f, &pu, &charset);
+		t = "gopher:search";
+	    }
+	    TRAP_OFF;
+	    goto page_loaded;
 	case 's':
 	    t = "audio/basic";
 	    break;
@@ -1982,6 +1992,9 @@ loadGeneralFile(char *path, ParsedURL *volatile current, char *referer,
 	    break;
 	case 'h':
 	    t = "text/html";
+	    break;
+	case '9':
+	    do_download = 1;
 	    break;
 	}
     }
@@ -7394,8 +7407,13 @@ loadHTMLString(Str page)
 /* 
  * loadGopherDir: get gopher directory
  */
+#ifdef USE_M17N
 Str
 loadGopherDir(URLFile *uf, ParsedURL *pu, wc_ces * charset)
+#else
+Str
+loadGopherDir0(URLFile *uf, ParsedURL *pu)
+#endif
 {
     Str volatile tmp;
     Str lbuf, name, file, host, port, type;
@@ -7455,6 +7473,9 @@ loadGopherDir(URLFile *uf, ParsedURL *pu, wc_ces * charset)
 	case '1':
 	    p = "[directory]";
 	    break;
+	case '7':
+	    p = "[search]";
+	    break;
 	case 'm':
 	    p = "[message]";
 	    break;
@@ -7469,6 +7490,9 @@ loadGopherDir(URLFile *uf, ParsedURL *pu, wc_ces * charset)
 	    break;
 	case 'i':
 	    link = 0;
+	    break;
+	case '9':
+	    p = "[binary]";
 	    break;
 	default:
 	    p = "[unsupported]";
@@ -7500,6 +7524,36 @@ loadGopherDir(URLFile *uf, ParsedURL *pu, wc_ces * charset)
     if(pre)
 	Strcat_charp(tmp, "</pre>");
     Strcat_charp(tmp, "</table>\n</body>\n</html>\n");
+    return tmp;
+}
+
+#ifdef USE_M17N
+Str
+loadGopherSearch(URLFile *uf, ParsedURL *pu, wc_ces * charset)
+#else
+Str
+loadGopherSearch0(URLFile *uf, ParsedURL *pu)
+#endif
+{
+    Str tmp;
+    char *volatile p, *volatile q;
+    MySignalHandler(*volatile prevtrap) (SIGNAL_ARG) = NULL;
+#ifdef USE_M17N
+    wc_ces doc_charset = DocumentCharset;
+#endif
+
+    tmp = parsedURL2Str(pu);
+    p = html_quote(tmp->ptr);
+    tmp =
+	convertLine(NULL, Strnew_charp(file_unquote(tmp->ptr)), RAW_MODE,
+		    charset, doc_charset);
+    q = html_quote(tmp->ptr);
+    tmp = Strnew_m_charp("<html>\n<head>\n<base href=\"", p, "\">\n<title>", q,
+			 "</title>\n</head>\n<body>\n<h1>Search ", q,
+			 "</h1>\n<form role=\"search\">\n<div>\n"
+			 "<input type=\"search\" name=\"\">"
+			 "</div>\n</form>\n</body>", NULL);
+
     return tmp;
 }
 #endif				/* USE_GOPHER */

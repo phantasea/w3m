@@ -1,3 +1,34 @@
+2020-12-19  Tatsuya Kinoshita  <tats@debian.org>
+
+	* doc-jp/README.siteconf, doc/README.siteconf:
+	Add examples of siteconf, set user_agent to Googlebot for Twitter.
+
+2020-12-18  Tatsuya Kinoshita  <tats@debian.org>
+
+	* po/zh_TW.po: Update PO-Revision-Date for zh_TW.
+
+2020-12-18  Ambrose Li  <ambrose.li@gmail.com>
+
+	* file.c: q_level was never initialized, causing random test failures.
+	This should fix that.
+	Origin: https://github.com/tats/w3m/pull/159
+
+	* po/zh_TW.po: Translate new string.
+	Origin: https://github.com/tats/w3m/pull/158
+
+2020-12-17  Tatsuya Kinoshita  <tats@debian.org>
+
+	* doc-jp/README.siteconf, doc/README.siteconf:
+	Update examples of siteconf, forward twitter.com to nitter.net.
+	Because mobile.twitter.com without JavaScript is unusable anymore.
+
+2020-12-16  Tatsuya Kinoshita  <tats@debian.org>
+
+	* url.c: Use the default ciphers for OpenSSL 1.1 and later.
+	cf. https://bugs.launchpad.net/ubuntu/+source/w3m/+bug/1325674
+	    https://src.fedoraproject.org/rpms/w3m/blob/36f14df378762a3a03a6a724583ca5b0ff618ed5/f/Fix-the-cipher-list-string-to-ensure-that-it-contain.patch
+	    https://fedoraproject.org/wiki/Packaging:CryptoPolicies
+
 2020-12-09  bptato  <nincsnevem662@gmail.com>
 
 	Small Gopher fixes/improvements
